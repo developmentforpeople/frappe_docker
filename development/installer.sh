@@ -108,7 +108,7 @@ init_bench() {
   fi
 
   nvm use "$NODE_VERSION"
-  PYENV_VERSION="$PYENV_VERSION" bench init --skip-redis-config-generation --frappe-branch "$branch" --python "$python_version" "$bench_name"
+  PYENV_VERSION="$PYENV_VERSION" bench init --skip-redis-config-generation --frappe-path "$upstream" --frappe-branch "$branch" --python "$python_version" "$bench_name"
   cd "$bench_name" || exit
 
   echo "Setting up config"
