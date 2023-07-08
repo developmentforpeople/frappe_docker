@@ -14,9 +14,9 @@ It is recommended you allocate at least 4GB of RAM to docker:
 - [Instructions for macOS](https://docs.docker.com/desktop/settings/mac/#advanced)
 
 Here is a screenshot showing the relevant setting in the Help Manual
-![image](/docs/images/Docker%20Manual%20Screenshot%20-%20Resources%20section.png)
+![image](images/Docker%20Manual%20Screenshot%20-%20Resources%20section.png)
 Here is a screenshot showing the settings in Docker Desktop on Mac
-![images](/docs/images/Docker%20Desktop%20Screenshot%20-%20Resources%20section.png)
+![images](images/Docker%20Desktop%20Screenshot%20-%20Resources%20section.png)
 
 ## Bootstrap Containers for development
 
@@ -82,7 +82,7 @@ To setup frappe framework version 14 bench set `PYENV_VERSION` environment varia
 bench init --skip-redis-config-generation --frappe-branch version-14 frappe-bench
 # Or set environment versions explicitly
 nvm use v16
-PYENV_VERSION=3.10.5 bench init --skip-redis-config-generation --frappe-branch version-14 frappe-bench
+PYENV_VERSION=3.10.12 bench init --skip-redis-config-generation --frappe-branch version-14 frappe-bench
 # Switch directory
 cd frappe-bench
 ```
@@ -204,7 +204,7 @@ bench get-app --branch version-12 https://github.com/myusername/myapp
 bench --site mysite.localhost install-app myapp
 ```
 
-At the time of this writing, the Payments app has been factored out of the Version 14 ERPNext app and is now a separate app. ERPNext will not install without it, however, so we need to specify `--resolve-deps` command line switch to install it.
+At the time of this writing, the Payments app has been factored out of the Version 14 ERPNext app and is now a separate app. ERPNext will not install it.
 
 ```shell
 bench get-app --branch version-14 --resolve-deps erpnext

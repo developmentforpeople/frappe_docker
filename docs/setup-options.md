@@ -60,7 +60,6 @@ environment variables or the `configurator` will fail.
 # Generate YAML
 docker compose -f compose.yaml \
   -f overrides/compose.proxy.yaml \
-  -f overrides/compose.erpnext.yaml \
   config > ~/gitops/docker-compose.yml
 
 # Start containers
@@ -68,6 +67,8 @@ docker compose --project-name <project-name> -f ~/gitops/docker-compose.yml up -
 ```
 
 ### Setup Frappe using containerized MariaDB and Redis with Letsencrypt certificates.
+
+In this case make sure you've set `LETSENCRYPT_EMAIL` and `SITES` environment variables are set or certificates won't work.
 
 ```sh
 # Generate YAML
@@ -83,10 +84,11 @@ docker compose --project-name <project-name> -f ~/gitops/docker-compose.yml up -
 
 ### Setup ERPNext using containerized MariaDB and Redis with Letsencrypt certificates.
 
+In this case make sure you've set `LETSENCRYPT_EMAIL` and `SITES` environment variables are set or certificates won't work.
+
 ```sh
 # Generate YAML
 docker compose -f compose.yaml \
-  -f overrides/compose.erpnext.yaml \
   -f overrides/compose.mariadb.yaml \
   -f overrides/compose.redis.yaml \
   -f overrides/compose.https.yaml \
@@ -110,20 +112,22 @@ nano .env
 
 # Pull new images
 docker compose -f compose.yaml \
-  -f overrides/compose.erpnext.yaml \
   # ... your other overrides
   config > ~/gitops/docker-compose.yml
 
+# Pull images
 docker compose --project-name <project-name> -f ~/gitops/docker-compose.yml pull
 
 # Stop containers
 docker compose --project-name <project-name> -f ~/gitops/docker-compose.yml down
 
-# Remove assets volume for repopulation
-docker volume rm <name of assets volume>
-
 # Restart containers
 docker compose --project-name <project-name> -f ~/gitops/docker-compose.yml up -d
 ```
+
+Note:
+
+- pull and stop container commands can be skipped if immutable image tags are used
+- `docker compose up -d` will pull new immutable tags if not found.
 
 To migrate sites refer [site operations](./site-operations.md#migrate-site)
