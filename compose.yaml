@@ -1,8 +1,10 @@
 x-customizable-image: &customizable_image
   # By default the image used only contains the `frappe` and `erpnext` apps.
-  # See https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md
+  # See https://github.com/frappe/frappe_docker/blob/main/docs/02-setup/02-build-setup.md#define-custom-apps
   # about using custom images.
-  image: frappe/erpnext:${ERPNEXT_VERSION:?No ERPNext version set}
+  image: ${CUSTOM_IMAGE:-frappe/erpnext}:${CUSTOM_TAG:-$ERPNEXT_VERSION}
+  pull_policy: ${PULL_POLICY:-always}
+  restart: ${RESTART_POLICY:-unless-stopped}
 
 x-depends-on-configurator: &depends_on_configurator
   depends_on:
@@ -17,6 +19,7 @@ x-backend-defaults: &backend_defaults
 services:
   configurator:
     <<: *backend_defaults
+    platform: linux/amd64
     entrypoint:
       - bash
       - -c
@@ -30,24 +33,33 @@ services:
         bench set-config -g redis_queue "redis://$$REDIS_QUEUE";
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
         bench set-config -gp socketio_port $$SOCKETIO_PORT;
+        bench set-config -g chromium_path /usr/lib/chromium/chromium-headless-shell;
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      REDIS_CACHE: ${REDIS_CACHE}
-      REDIS_QUEUE: ${REDIS_QUEUE}
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-}
+      REDIS_CACHE: ${REDIS_CACHE:-}
+      REDIS_QUEUE: ${REDIS_QUEUE:-}
       SOCKETIO_PORT: 9000
     depends_on: {}
+    restart: on-failure
 
   backend:
     <<: *backend_defaults
+    platform: linux/amd64
+    environment:
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-4}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-120}
 
   frontend:
     <<: *customizable_image
+    platform: linux/amd64
     command:
       - nginx-entrypoint.sh
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
+      NGINX_LISTEN_PORT: ${NGINX_LISTEN_PORT:-8080}
       FRAPPE_SITE_NAME_HEADER: ${FRAPPE_SITE_NAME_HEADER:-$$host}
       UPSTREAM_REAL_IP_ADDRESS: ${UPSTREAM_REAL_IP_ADDRESS:-127.0.0.1}
       UPSTREAM_REAL_IP_HEADER: ${UPSTREAM_REAL_IP_HEADER:-X-Forwarded-For}
@@ -62,6 +74,7 @@ services:
 
   websocket:
     <<: [*depends_on_configurator, *customizable_image]
+    platform: linux/amd64
     command:
       - node
       - /home/frappe/frappe-bench/apps/frappe/socketio.js
@@ -70,14 +83,17 @@ services:
 
   queue-short:
     <<: *backend_defaults
+    platform: linux/amd64
     command: bench worker --queue short,default
 
   queue-long:
     <<: *backend_defaults
+    platform: linux/amd64
     command: bench worker --queue long,default,short
 
   scheduler:
     <<: *backend_defaults
+    platform: linux/amd64
     command: bench schedule
 
 # ERPNext requires local assets access (Frappe does not)
